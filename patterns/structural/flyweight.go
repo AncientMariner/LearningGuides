@@ -1,6 +1,9 @@
 package structural
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // Flyweight: shares immutable state across many objects to reduce memory.
 // sync.Pool handles pooling; here we show an intrinsic-state cache.
@@ -16,6 +19,7 @@ func (t *TreeType) Draw(x, y int) {
 }
 
 type TreeTypeFactory struct {
+	mu    sync.RWMutex
 	cache map[string]*TreeType
 }
 
@@ -25,10 +29,20 @@ func NewTreeTypeFactory() *TreeTypeFactory {
 
 func (f *TreeTypeFactory) Get(name, color, texture string) *TreeType {
 	key := name + color + texture
+
+	f.mu.RLock()
+	t, ok := f.cache[key]
+	f.mu.RUnlock()
+	if ok {
+		return t
+	}
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	if t, ok := f.cache[key]; ok {
 		return t
 	}
-	t := &TreeType{name: name, color: color, texture: texture}
+	t = &TreeType{name: name, color: color, texture: texture}
 	f.cache[key] = t
 	return t
 }

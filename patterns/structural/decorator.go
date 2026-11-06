@@ -1,6 +1,9 @@
 package structural
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Decorator: wraps an interface to add behaviour without modifying the original.
 // Middleware chains (e.g. http.Handler) are the canonical Go use case.
@@ -22,16 +25,7 @@ func NewUpperCase(inner TextProcessor) TextProcessor {
 }
 
 func (u *UpperCaseDecorator) Process(text string) string {
-	result := u.inner.Process(text)
-	upper := make([]byte, len(result))
-	for i := range result {
-		c := result[i]
-		if c >= 'a' && c <= 'z' {
-			c -= 32
-		}
-		upper[i] = c
-	}
-	return string(upper)
+	return strings.ToUpper(u.inner.Process(text))
 }
 
 type PrefixDecorator struct {

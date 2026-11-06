@@ -1,6 +1,9 @@
 package behavioral
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // Observer: notifies subscribers when state changes.
 // Channels are idiomatic for goroutine-based observers; interfaces suit sync use.
@@ -22,6 +25,7 @@ type Subscriber interface {
 }
 
 type EventBus struct {
+	mu          sync.RWMutex
 	subscribers map[EventType][]Subscriber
 }
 
@@ -30,11 +34,16 @@ func NewEventBus() *EventBus {
 }
 
 func (b *EventBus) Subscribe(t EventType, s Subscriber) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	b.subscribers[t] = append(b.subscribers[t], s)
 }
 
 func (b *EventBus) Publish(e Event) {
-	for _, s := range b.subscribers[e.Type] {
+	b.mu.RLock()
+	subs := b.subscribers[e.Type]
+	b.mu.RUnlock()
+	for _, s := range subs {
 		s.OnEvent(e)
 	}
 }

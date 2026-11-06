@@ -1,14 +1,17 @@
 package behavioral
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // Lazy Evaluation: defer expensive computation until first use.
 // sync.Once for lazy init; closures for lazy values.
 
 type LazyValue[T any] struct {
 	compute func() T
+	once    sync.Once
 	value   T
-	done    bool
 }
 
 func NewLazy[T any](compute func() T) *LazyValue[T] {
@@ -16,11 +19,10 @@ func NewLazy[T any](compute func() T) *LazyValue[T] {
 }
 
 func (l *LazyValue[T]) Get() T {
-	if !l.done {
+	l.once.Do(func() {
 		l.value = l.compute()
-		l.done = true
 		fmt.Println("computed")
-	}
+	})
 	return l.value
 }
 

@@ -15,7 +15,6 @@ func FetchAll(ctx context.Context, urls []string) ([]string, error) {
 	results := make([]string, len(urls))
 
 	for i, url := range urls {
-		i, url := i, url // capture loop vars (pre-Go 1.22)
 		g.Go(func() error {
 			select {
 			case <-ctx.Done():

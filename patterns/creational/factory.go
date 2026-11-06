@@ -14,10 +14,6 @@ type Cat struct{}
 func (d Dog) Speak() string { return "Woof" }
 func (c Cat) Speak() string { return "Meow" }
 
-func Speak[T Animal](a T) string {
-	return a.Speak()
-}
-
 func NewAnimal(kind string) (Animal, error) {
 	switch kind {
 	case "dog":
@@ -32,8 +28,6 @@ func NewAnimal(kind string) (Animal, error) {
 func ExampleFactory() {
 	dog, _ := NewAnimal("dog")
 	cat, _ := NewAnimal("cat")
-	Speak(&Dog{})
-	Speak(&Cat{})
 	fmt.Println(dog.Speak())
 	fmt.Println(cat.Speak())
 	// Output:

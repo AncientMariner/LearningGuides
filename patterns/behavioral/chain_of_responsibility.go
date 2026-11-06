@@ -5,9 +5,18 @@ import "fmt"
 // Chain of Responsibility: passes a request along a chain of handlers.
 // Middleware (e.g. http.Handler wrapping) is the canonical Go form.
 
+type LogLevel int
+
+const (
+	LogLevelUnknown LogLevel = iota // 0 = unset/invalid
+	LogLevelInfo                    // 1
+	LogLevelWarn                    // 2
+	LogLevelError                   // 3
+)
+
 type Handler interface {
 	SetNext(Handler)
-	Handle(level int, message string)
+	Handle(level LogLevel, message string)
 }
 
 type BaseHandler struct {
@@ -16,7 +25,7 @@ type BaseHandler struct {
 
 func (b *BaseHandler) SetNext(h Handler) { b.next = h }
 
-func (b *BaseHandler) handleNext(level int, message string) {
+func (b *BaseHandler) handleNext(level LogLevel, message string) {
 	if b.next != nil {
 		b.next.Handle(level, message)
 	}
@@ -24,8 +33,8 @@ func (b *BaseHandler) handleNext(level int, message string) {
 
 type InfoHandler struct{ BaseHandler }
 
-func (h *InfoHandler) Handle(level int, message string) {
-	if level == 1 {
+func (h *InfoHandler) Handle(level LogLevel, message string) {
+	if level == LogLevelInfo {
 		fmt.Printf("INFO: %s\n", message)
 		return
 	}
@@ -34,8 +43,8 @@ func (h *InfoHandler) Handle(level int, message string) {
 
 type WarnHandler struct{ BaseHandler }
 
-func (h *WarnHandler) Handle(level int, message string) {
-	if level == 2 {
+func (h *WarnHandler) Handle(level LogLevel, message string) {
+	if level == LogLevelWarn {
 		fmt.Printf("WARN: %s\n", message)
 		return
 	}
@@ -44,8 +53,8 @@ func (h *WarnHandler) Handle(level int, message string) {
 
 type ErrorHandler struct{ BaseHandler }
 
-func (h *ErrorHandler) Handle(level int, message string) {
-	if level == 3 {
+func (h *ErrorHandler) Handle(level LogLevel, message string) {
+	if level == LogLevelError {
 		fmt.Printf("ERROR: %s\n", message)
 		return
 	}
@@ -59,9 +68,9 @@ func ExampleChainOfResponsibility() {
 	info.SetNext(warn)
 	warn.SetNext(errH)
 
-	info.Handle(1, "starting up")
-	info.Handle(2, "low memory")
-	info.Handle(3, "disk full")
+	info.Handle(LogLevelInfo, "starting up")
+	info.Handle(LogLevelWarn, "low memory")
+	info.Handle(LogLevelError, "disk full")
 	// Output:
 	// INFO: starting up
 	// WARN: low memory

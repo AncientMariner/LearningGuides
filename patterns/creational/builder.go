@@ -7,7 +7,10 @@ import (
 )
 
 // Builder pattern: use when construction requires validation across multiple fields.
-// Prefer functional options (see functional_options.go) for simpler cases.
+// Prefer functional options (see functional_options.go) for simpler cases — they
+// scale better as APIs evolve and require less boilerplate. Use the builder only
+// when you need to validate relationships between fields (e.g. readTimeout must
+// not exceed writeTimeout) that cannot be checked inside a single WithXxx function.
 
 type Server struct {
 	addr         string
